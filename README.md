@@ -15,44 +15,6 @@ This release keeps the code needed for the paper’s main ChACo experiments:
 - squared-energy goodness, RCB ordering, block-wise L2 normalization, and Goodness-Margin Adaptive Dropout;
 - repeated-seed aggregation.
 
-## Method implemented
-
-For layer \(\ell\), the input is detached and the final paper ordering is used:
-
-\[
-Y^{(\ell)} = \operatorname{BN}\!\left(W^{(\ell)} *
-\operatorname{ReLU}(\operatorname{stopgrad}(Y^{(\ell-1)}))\right).
-\]
-
-The \(C_\ell\) output channels are divided into \(K_\ell\) equal blocks. The squared-energy goodness of block \(k\) is
-
-\[
-G^{(\ell)}_{n,k} =
-\frac{1}{S_\ell H_\ell W_\ell}
-\sum_{s,h,w}\left(Y^{(\ell)}_{n,k,s,h,w}\right)^2,
-\qquad S_\ell=C_\ell/K_\ell.
-\]
-
-Fine-label logits are obtained through the column-stochastic association matrix \(A_\ell\):
-
-\[
-\widetilde G^{(\ell)} = G^{(\ell)}A_\ell.
-\]
-
-- A direct fine-class layer uses \(K_\ell=J\) and \(A_\ell=I_J\).
-- An association-policy layer uses \(K_\ell<J\) and learns \(A_\ell\) from class-conditioned local block responses.
-
-Only the local fine-label cross-entropy updates \(W^{(\ell)}\). The association scores \(Q_\ell\) are buffers, not gradient-updated parameters, and follow the paper’s slower activity-driven update:
-
-\[
-Q_{\ell,kj}\leftarrow(1-\lambda_q)Q_{\ell,kj}
-+\eta_q\left(E_{\ell,kj}-\gamma\Delta^{\mathrm{bal}}_{\ell,kj}\right),
-\qquad
-A_{\ell,:,j}=\operatorname{softmax}(Q_{\ell,:,j}/\tau_\ell).
-\]
-
-The activation passed to the next layer is block-wise L2 normalized and detached. In the ResNet-style model, a detached shortcut is added before the local head is evaluated, so the local loss updates only the current block parameters.
-
 ## Installation
 
 Python 3.10 or later is recommended.
